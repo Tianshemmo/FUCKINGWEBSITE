@@ -62,12 +62,12 @@ export default function HeroSection() {
         </div>
 
         {/* 向下滾動提示 */}
-        <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2 animate-bounce">
+        <div className="absolute bottom-8 left-1/2 -translate-x-1/2 animate-bounce">
           <button
             onClick={scrollToNext}
             className="flex flex-col items-center gap-2 text-white hover:text-primary transition-colors"
           >
-            <span className="text-sm font-medium">向下滾動</span>
+            <span className="text-sm font-medium whitespace-nowrap">向下滾動</span>
             <ChevronDown size={24} />
           </button>
         </div>
