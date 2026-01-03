@@ -49,9 +49,12 @@ const TRAIN_SCHEDULE = [
 
 function getNextTrains(): TrainInfo[] {
   const now = new Date();
-  const currentHours = now.getHours();
-  const currentMinutes = now.getMinutes();
-  const currentTotalMinutes = currentHours * 60 + currentMinutes;
+  // 確保使用正確的時間（台灣時區 UTC+8）
+  const utcHours = now.getUTCHours();
+  const utcMinutes = now.getUTCMinutes();
+  const taiwanHours = (utcHours + 8) % 24;
+  const taiwanMinutes = utcMinutes;
+  const currentTotalMinutes = taiwanHours * 60 + taiwanMinutes;
 
   const nextTrains: TrainInfo[] = [];
 

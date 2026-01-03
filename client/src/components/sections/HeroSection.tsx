@@ -62,7 +62,7 @@ export default function HeroSection() {
         </div>
 
         {/* 向下滾動提示 */}
-        <div className="absolute bottom-8 left-1/2 -translate-x-1/2">
+        <div className="absolute bottom-2 left-1/2 -translate-x-1/2">
           <button
             onClick={scrollToNext}
             className="flex flex-col items-center gap-2 text-white hover:text-primary transition-colors animate-bounce"
