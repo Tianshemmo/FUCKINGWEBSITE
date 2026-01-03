@@ -13,7 +13,7 @@ interface TrainInfo {
   destination: string;
 }
 
-// 大林火車站時刻表（區間車）- 實際台鐵時刻
+// 大林火車站時刻表（區間車）
 const TRAIN_SCHEDULE = [
   // 南下（往嘉義）
   { direction: 'south', time: '06:10', destination: '嘉義' },
@@ -49,74 +49,77 @@ const TRAIN_SCHEDULE = [
 
 function getNextTrains(): TrainInfo[] {
   const now = new Date();
-  const currentMinutes = now.getHours() * 60 + now.getMinutes();
+  const currentHours = now.getHours();
+  const currentMinutes = now.getMinutes();
+  const currentTotalMinutes = currentHours * 60 + currentMinutes;
 
   const nextTrains: TrainInfo[] = [];
 
   // 找下一班南下車
-  const nextSouth = TRAIN_SCHEDULE.filter(t => t.direction === 'south').find(train => {
+  const southTrains = TRAIN_SCHEDULE.filter(t => t.direction === 'south');
+  let nextSouth = null;
+  
+  for (const train of southTrains) {
     const [h, m] = train.time.split(':').map(Number);
-    const trainMinutes = h * 60 + m;
-    return trainMinutes > currentMinutes;
-  });
-
-  if (nextSouth) {
-    const [h, m] = nextSouth.time.split(':').map(Number);
-    const trainMinutes = h * 60 + m;
-    const minutesUntil = trainMinutes - currentMinutes;
-    nextTrains.push({
-      direction: 'south',
-      time: nextSouth.time,
-      minutesUntil,
-      destination: nextSouth.destination,
-    });
+    const trainTotalMinutes = h * 60 + m;
+    if (trainTotalMinutes > currentTotalMinutes) {
+      nextSouth = train;
+      const minutesUntil = trainTotalMinutes - currentTotalMinutes;
+      nextTrains.push({
+        direction: 'south',
+        time: train.time,
+        minutesUntil,
+        destination: train.destination,
+      });
+      break;
+    }
   }
 
   // 找下一班北上車
-  const nextNorth = TRAIN_SCHEDULE.filter(t => t.direction === 'north').find(train => {
+  const northTrains = TRAIN_SCHEDULE.filter(t => t.direction === 'north');
+  let nextNorth = null;
+  
+  for (const train of northTrains) {
     const [h, m] = train.time.split(':').map(Number);
-    const trainMinutes = h * 60 + m;
-    return trainMinutes > currentMinutes;
-  });
+    const trainTotalMinutes = h * 60 + m;
+    if (trainTotalMinutes > currentTotalMinutes) {
+      nextNorth = train;
+      const minutesUntil = trainTotalMinutes - currentTotalMinutes;
+      nextTrains.push({
+        direction: 'north',
+        time: train.time,
+        minutesUntil,
+        destination: train.destination,
+      });
+      break;
+    }
+  }
 
-  if (nextNorth) {
-    const [h, m] = nextNorth.time.split(':').map(Number);
-    const trainMinutes = h * 60 + m;
-    const minutesUntil = trainMinutes - currentMinutes;
+  // 如果沒有找到今天的班次，返回明天的第一班車
+  if (!nextSouth) {
+    const firstSouth = southTrains[0];
+    const [h, m] = firstSouth.time.split(':').map(Number);
+    const trainTotalMinutes = h * 60 + m;
+    const minutesUntil = (24 * 60 - currentTotalMinutes) + trainTotalMinutes;
     nextTrains.push({
-      direction: 'north',
-      time: nextNorth.time,
+      direction: 'south',
+      time: firstSouth.time,
       minutesUntil,
-      destination: nextNorth.destination,
+      destination: firstSouth.destination,
     });
   }
 
-  // 如果沒有找到，返回明天的第一班車
-  if (nextTrains.length === 0) {
-    const firstSouth = TRAIN_SCHEDULE.find(t => t.direction === 'south');
-    const firstNorth = TRAIN_SCHEDULE.find(t => t.direction === 'north');
-    if (firstSouth) {
-      const [h, m] = firstSouth.time.split(':').map(Number);
-      const trainMinutes = h * 60 + m;
-      const minutesUntil = (24 * 60 - currentMinutes) + trainMinutes;
-      nextTrains.push({
-        direction: 'south',
-        time: firstSouth.time,
-        minutesUntil,
-        destination: firstSouth.destination,
-      });
-    }
-    if (firstNorth) {
-      const [h, m] = firstNorth.time.split(':').map(Number);
-      const trainMinutes = h * 60 + m;
-      const minutesUntil = (24 * 60 - currentMinutes) + trainMinutes;
-      nextTrains.push({
-        direction: 'north',
-        time: firstNorth.time,
-        minutesUntil,
-        destination: firstNorth.destination,
-      });
-    }
+  if (!nextNorth) {
+    const firstNorth = northTrains[0];
+    const [h, m] = firstNorth.time.split(':').map(Number);
+    const trainTotalMinutes = h * 60 + m;
+    const minutesUntil = (24 * 60 - currentTotalMinutes) + trainTotalMinutes;
+    nextTrains.push({
+      direction: 'north',
+      time: firstNorth.time,
+      minutesUntil,
+      destination: firstNorth.destination,
+    });
   }
 
   return nextTrains;
