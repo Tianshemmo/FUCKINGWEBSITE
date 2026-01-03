@@ -1,15 +1,16 @@
 /**
- * 吃什麼轉盤組件
- * 互動旋轉轉盤，幫助使用者決定吃什麼
+ * 吃什麼跑馬燈組件
+ * 輪流亮起格子，幫助使用者決定吃什麼
  */
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { FOOD_WHEEL_OPTIONS } from '@/lib/daling-data';
+import { cn } from '@/lib/utils';
 
 export default function FoodWheel() {
-  const [rotation, setRotation] = useState(0);
+  const [activeIndex, setActiveIndex] = useState<number | null>(null);
   const [isSpinning, setIsSpinning] = useState(false);
   const [selectedFood, setSelectedFood] = useState<typeof FOOD_WHEEL_OPTIONS[0] | null>(null);
 
@@ -17,124 +18,101 @@ export default function FoodWheel() {
     if (isSpinning) return;
 
     setIsSpinning(true);
-    const spins = Math.floor(Math.random() * 5) + 5;
-    const randomAngle = Math.random() * 360;
-    const totalRotation = spins * 360 + randomAngle;
+    setSelectedFood(null);
+    
+    let currentIndex = activeIndex || 0;
+    let speed = 50; // 初始速度
+    let rounds = 0;
+    const totalRounds = 5 + Math.floor(Math.random() * 3); // 跑 5-8 圈
+    const stopIndex = Math.floor(Math.random() * FOOD_WHEEL_OPTIONS.length);
+    
+    const run = () => {
+      currentIndex = (currentIndex + 1) % FOOD_WHEEL_OPTIONS.length;
+      setActiveIndex(currentIndex);
 
-    setRotation(prev => prev + totalRotation);
+      // 計算進度
+      const currentStep = rounds * FOOD_WHEEL_OPTIONS.length + currentIndex;
+      const totalSteps = totalRounds * FOOD_WHEEL_OPTIONS.length + stopIndex;
 
-    setTimeout(() => {
-      const normalizedRotation = (rotation + totalRotation) % 360;
-      const segmentAngle = 360 / FOOD_WHEEL_OPTIONS.length;
-      const selectedIndex = Math.floor((360 - normalizedRotation) / segmentAngle) % FOOD_WHEEL_OPTIONS.length;
-      setSelectedFood(FOOD_WHEEL_OPTIONS[selectedIndex]);
-      setIsSpinning(false);
-    }, 3000);
+      if (currentStep < totalSteps) {
+        // 逐漸減速
+        if (totalSteps - currentStep < 10) {
+          speed += 30;
+        } else if (totalSteps - currentStep < 20) {
+          speed += 10;
+        }
+        
+        if (currentIndex === FOOD_WHEEL_OPTIONS.length - 1) {
+          rounds++;
+        }
+        
+        setTimeout(run, speed);
+      } else {
+        // 停止
+        setSelectedFood(FOOD_WHEEL_OPTIONS[stopIndex]);
+        setIsSpinning(false);
+      }
+    };
+
+    run();
   };
-
-  const colors = [
-    '#F4D03F', // 黃
-    '#FF9F43', // 橙
-    '#EE5A6F', // 紅
-    '#4A9B6F', // 綠
-    '#5A5A5A', // 灰
-    '#FFD93D', // 亮黃
-    '#FF6B6B', // 亮紅
-    '#95E1D3', // 青綠
-  ];
 
   return (
     <div className="w-full">
       {/* 標題 */}
       <div className="mb-8">
         <h2 className="font-display text-3xl md:text-4xl font-bold text-foreground mb-2">
-          吃什麼轉盤
+          吃什麼決定器
         </h2>
         <p className="text-muted-foreground text-lg">
-          選擇困難症救星 - 讓轉盤決定你的晚餐
+          選擇困難症救星 - 讓命運決定你的晚餐
         </p>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-        {/* 左側：轉盤 */}
+        {/* 左側：跑馬燈格子 */}
         <div className="flex flex-col items-center justify-center">
-          <div className="relative w-64 h-64 mb-8">
-            {/* 轉盤 */}
-            <svg
-              width="256"
-              height="256"
-              viewBox="0 0 256 256"
-              className="w-full h-full"
-              style={{
-                transform: `rotate(${rotation}deg)`,
-                transition: isSpinning ? 'transform 3s cubic-bezier(0.17, 0.67, 0.12, 0.98)' : 'none',
-              }}
-            >
-              {FOOD_WHEEL_OPTIONS.map((food, index) => {
-                const angle = (360 / FOOD_WHEEL_OPTIONS.length) * index;
-                const nextAngle = angle + 360 / FOOD_WHEEL_OPTIONS.length;
-                const startRad = (angle * Math.PI) / 180;
-                const endRad = (nextAngle * Math.PI) / 180;
-
-                const x1 = 128 + 100 * Math.cos(startRad);
-                const y1 = 128 + 100 * Math.sin(startRad);
-                const x2 = 128 + 100 * Math.cos(endRad);
-                const y2 = 128 + 100 * Math.sin(endRad);
-
-                const midAngle = (angle + nextAngle) / 2;
-                const midRad = (midAngle * Math.PI) / 180;
-                const textX = 128 + 65 * Math.cos(midRad);
-                const textY = 128 + 65 * Math.sin(midRad);
-
-                return (
-                  <g key={index}>
-                    <path
-                      d={`M 128 128 L ${x1} ${y1} A 100 100 0 0 1 ${x2} ${y2} Z`}
-                      fill={colors[index % colors.length]}
-                      stroke="white"
-                      strokeWidth="2"
-                    />
-                    <text
-                      x={textX}
-                      y={textY}
-                      textAnchor="middle"
-                      dominantBaseline="middle"
-                      fill="white"
-                      fontSize="12"
-                      fontWeight="bold"
-                      transform={`rotate(${midAngle + 90} ${textX} ${textY})`}
-                    >
-                      {food.emoji} {food.name}
-                    </text>
-                  </g>
-                );
-              })}
-
-              {/* 中心圓 */}
-              <circle cx="128" cy="128" r="30" fill="white" stroke="#2C2C2C" strokeWidth="2" />
-              <circle cx="128" cy="128" r="15" fill="#F4D03F" />
-            </svg>
-
-            {/* 指針 */}
-            <div className="absolute top-0 left-1/2 transform -translate-x-1/2 -translate-y-2 z-10">
-              <div className="w-0 h-0 border-l-4 border-r-4 border-t-8 border-l-transparent border-r-transparent border-t-primary" />
+          <div className="grid grid-cols-3 gap-3 w-full max-w-md aspect-square mb-8">
+            {/* 1. 臭豆腐 */}
+            <FoodGridItem index={0} activeIndex={activeIndex} food={FOOD_WHEEL_OPTIONS[0]} />
+            {/* 2. 狗尾雞 */}
+            <FoodGridItem index={1} activeIndex={activeIndex} food={FOOD_WHEEL_OPTIONS[1]} />
+            {/* 3. 肉羹湯 */}
+            <FoodGridItem index={2} activeIndex={activeIndex} food={FOOD_WHEEL_OPTIONS[2]} />
+            
+            {/* 8. 陽春麵 */}
+            <FoodGridItem index={7} activeIndex={activeIndex} food={FOOD_WHEEL_OPTIONS[7]} />
+            
+            {/* 中間按鈕 */}
+            <div className="flex items-center justify-center">
+              <Button
+                onClick={handleSpin}
+                disabled={isSpinning}
+                className={cn(
+                  "w-full h-full rounded-xl font-display text-xl font-bold transition-all duration-200 shadow-lg",
+                  isSpinning ? "bg-muted text-muted-foreground" : "bg-primary text-primary-foreground hover:scale-105 hover:shadow-primary/20"
+                )}
+              >
+                {isSpinning ? '...' : '抽！'}
+              </Button>
             </div>
+            
+            {/* 4. 排骨飯 */}
+            <FoodGridItem index={3} activeIndex={activeIndex} food={FOOD_WHEEL_OPTIONS[3]} />
+            
+            {/* 7. 蚵仔煎 */}
+            <FoodGridItem index={6} activeIndex={activeIndex} food={FOOD_WHEEL_OPTIONS[6]} />
+            {/* 6. 炸豆腐 */}
+            <FoodGridItem index={5} activeIndex={activeIndex} food={FOOD_WHEEL_OPTIONS[5]} />
+            {/* 5. 糖廠冰棒 */}
+            <FoodGridItem index={4} activeIndex={activeIndex} food={FOOD_WHEEL_OPTIONS[4]} />
           </div>
-
-          {/* 旋轉按鈕 */}
-          <Button
-            onClick={handleSpin}
-            disabled={isSpinning}
-            className="bg-primary text-primary-foreground hover:bg-primary/90 disabled:opacity-50 font-display text-lg font-bold px-8 py-6"
-          >
-            {isSpinning ? '轉盤中...' : '抽！'}
-          </Button>
         </div>
 
         {/* 右側：結果 */}
         <div className="flex flex-col justify-center">
           {selectedFood ? (
-            <Card className="p-8 bg-gradient-to-br from-primary/10 to-accent/10 border-2 border-primary">
+            <Card className="p-8 bg-gradient-to-br from-primary/10 to-accent/10 border-2 border-primary animate-in zoom-in duration-300">
               <div className="text-center">
                 <p className="text-6xl mb-4">{selectedFood.emoji}</p>
                 <h3 className="font-display text-3xl font-bold text-foreground mb-2">
@@ -144,7 +122,7 @@ export default function FoodWheel() {
                   ${selectedFood.price}
                 </p>
                 <p className="text-muted-foreground mb-6">
-                  轉盤已決定！就吃這個吧 🎉
+                  決定好了！就吃這個吧 🎉
                 </p>
                 <Button
                   onClick={() => window.open(selectedFood.mapUrl, '_blank')}
@@ -157,42 +135,44 @@ export default function FoodWheel() {
                   variant="outline"
                   className="w-full border-2 border-secondary/30 text-foreground hover:bg-muted font-semibold"
                 >
-                  再轉一次
+                  再抽一次
                 </Button>
               </div>
             </Card>
           ) : (
-            <Card className="p-8 text-center border-2 border-secondary/20">
+            <Card className="p-8 text-center border-2 border-secondary/20 h-full flex flex-col items-center justify-center">
               <p className="text-4xl mb-4">🎡</p>
               <p className="text-xl text-muted-foreground font-semibold">
-                點擊「抽！」按鈕開始轉盤
+                點擊「抽！」按鈕開始
               </p>
               <p className="text-sm text-muted-foreground mt-2">
                 讓命運為你決定晚餐吃什麼
               </p>
             </Card>
           )}
-
-          {/* 所有選項列表 */}
-          <div className="mt-8">
-            <h4 className="font-display text-lg font-bold text-foreground mb-4">
-              轉盤選項
-            </h4>
-            <div className="grid grid-cols-2 gap-3">
-              {FOOD_WHEEL_OPTIONS.map(food => (
-                <div
-                  key={food.id}
-                  className="p-3 bg-white rounded-lg border-2 border-secondary/20 text-center hover:shadow-md transition-shadow"
-                >
-                  <p className="text-2xl mb-1">{food.emoji}</p>
-                  <p className="text-sm font-semibold text-foreground">{food.name}</p>
-                  <p className="text-xs text-primary font-bold">${food.price}</p>
-                </div>
-              ))}
-            </div>
-          </div>
         </div>
       </div>
+    </div>
+  );
+}
+
+function FoodGridItem({ index, activeIndex, food }: { index: number, activeIndex: number | null, food: any }) {
+  const isActive = activeIndex === index;
+  
+  return (
+    <div
+      className={cn(
+        "relative flex flex-col items-center justify-center p-2 rounded-xl border-2 transition-all duration-150 bg-white",
+        isActive 
+          ? "border-primary bg-primary/10 scale-105 shadow-lg z-10 ring-4 ring-primary/20" 
+          : "border-secondary/20 opacity-80"
+      )}
+    >
+      <span className="text-2xl mb-1">{food.emoji}</span>
+      <span className="text-xs font-bold text-foreground text-center line-clamp-1">{food.name}</span>
+      {isActive && (
+        <div className="absolute -top-1 -right-1 w-3 h-3 bg-primary rounded-full animate-ping" />
+      )}
     </div>
   );
 }
