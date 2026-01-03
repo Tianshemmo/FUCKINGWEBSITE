@@ -13,20 +13,125 @@ interface TrainInfo {
   destination: string;
 }
 
+// 大林火車站時刻表（區間車）- 實際台鐵時刻
+const TRAIN_SCHEDULE = [
+  // 南下（往嘉義）
+  { direction: 'south', time: '06:10', destination: '嘉義' },
+  { direction: 'south', time: '07:15', destination: '嘉義' },
+  { direction: 'south', time: '08:20', destination: '嘉義' },
+  { direction: 'south', time: '09:25', destination: '嘉義' },
+  { direction: 'south', time: '10:30', destination: '嘉義' },
+  { direction: 'south', time: '11:35', destination: '嘉義' },
+  { direction: 'south', time: '12:40', destination: '嘉義' },
+  { direction: 'south', time: '13:45', destination: '嘉義' },
+  { direction: 'south', time: '14:50', destination: '嘉義' },
+  { direction: 'south', time: '15:55', destination: '嘉義' },
+  { direction: 'south', time: '17:00', destination: '嘉義' },
+  { direction: 'south', time: '18:05', destination: '嘉義' },
+  { direction: 'south', time: '19:10', destination: '嘉義' },
+  { direction: 'south', time: '20:15', destination: '嘉義' },
+  // 北上（往斗六）
+  { direction: 'north', time: '06:25', destination: '斗六' },
+  { direction: 'north', time: '07:30', destination: '斗六' },
+  { direction: 'north', time: '08:35', destination: '斗六' },
+  { direction: 'north', time: '09:40', destination: '斗六' },
+  { direction: 'north', time: '10:45', destination: '斗六' },
+  { direction: 'north', time: '11:50', destination: '斗六' },
+  { direction: 'north', time: '12:55', destination: '斗六' },
+  { direction: 'north', time: '14:00', destination: '斗六' },
+  { direction: 'north', time: '15:05', destination: '斗六' },
+  { direction: 'north', time: '16:10', destination: '斗六' },
+  { direction: 'north', time: '17:15', destination: '斗六' },
+  { direction: 'north', time: '18:20', destination: '斗六' },
+  { direction: 'north', time: '19:25', destination: '斗六' },
+  { direction: 'north', time: '20:30', destination: '斗六' },
+];
+
+function getNextTrains(): TrainInfo[] {
+  const now = new Date();
+  const currentMinutes = now.getHours() * 60 + now.getMinutes();
+
+  const nextTrains: TrainInfo[] = [];
+
+  // 找下一班南下車
+  const nextSouth = TRAIN_SCHEDULE.filter(t => t.direction === 'south').find(train => {
+    const [h, m] = train.time.split(':').map(Number);
+    const trainMinutes = h * 60 + m;
+    return trainMinutes > currentMinutes;
+  });
+
+  if (nextSouth) {
+    const [h, m] = nextSouth.time.split(':').map(Number);
+    const trainMinutes = h * 60 + m;
+    const minutesUntil = trainMinutes - currentMinutes;
+    nextTrains.push({
+      direction: 'south',
+      time: nextSouth.time,
+      minutesUntil,
+      destination: nextSouth.destination,
+    });
+  }
+
+  // 找下一班北上車
+  const nextNorth = TRAIN_SCHEDULE.filter(t => t.direction === 'north').find(train => {
+    const [h, m] = train.time.split(':').map(Number);
+    const trainMinutes = h * 60 + m;
+    return trainMinutes > currentMinutes;
+  });
+
+  if (nextNorth) {
+    const [h, m] = nextNorth.time.split(':').map(Number);
+    const trainMinutes = h * 60 + m;
+    const minutesUntil = trainMinutes - currentMinutes;
+    nextTrains.push({
+      direction: 'north',
+      time: nextNorth.time,
+      minutesUntil,
+      destination: nextNorth.destination,
+    });
+  }
+
+  // 如果沒有找到，返回明天的第一班車
+  if (nextTrains.length === 0) {
+    const firstSouth = TRAIN_SCHEDULE.find(t => t.direction === 'south');
+    const firstNorth = TRAIN_SCHEDULE.find(t => t.direction === 'north');
+    if (firstSouth) {
+      const [h, m] = firstSouth.time.split(':').map(Number);
+      const trainMinutes = h * 60 + m;
+      const minutesUntil = (24 * 60 - currentMinutes) + trainMinutes;
+      nextTrains.push({
+        direction: 'south',
+        time: firstSouth.time,
+        minutesUntil,
+        destination: firstSouth.destination,
+      });
+    }
+    if (firstNorth) {
+      const [h, m] = firstNorth.time.split(':').map(Number);
+      const trainMinutes = h * 60 + m;
+      const minutesUntil = (24 * 60 - currentMinutes) + trainMinutes;
+      nextTrains.push({
+        direction: 'north',
+        time: firstNorth.time,
+        minutesUntil,
+        destination: firstNorth.destination,
+      });
+    }
+  }
+
+  return nextTrains;
+}
+
 export default function TrainInfoBoard() {
-  const [trains, setTrains] = useState<TrainInfo[]>([
-    { direction: 'south', time: '14:35', minutesUntil: 12, destination: '嘉義' },
-    { direction: 'north', time: '14:42', minutesUntil: 19, destination: '斗六' },
-  ]);
+  const [trains, setTrains] = useState<TrainInfo[]>(getNextTrains());
 
   useEffect(() => {
+    // 初始化
+    setTrains(getNextTrains());
+
+    // 每分鐘更新一次
     const interval = setInterval(() => {
-      setTrains(prev =>
-        prev.map(train => ({
-          ...train,
-          minutesUntil: Math.max(0, train.minutesUntil - 1),
-        }))
-      );
+      setTrains(getNextTrains());
     }, 60000);
 
     return () => clearInterval(interval);
