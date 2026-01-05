@@ -4,7 +4,7 @@
  */
 
 import { Button } from '@/components/ui/button';
-import { MapPin, Clock } from 'lucide-react';
+import { MapPin, Clock, PlayCircle } from 'lucide-react';
 import { ITINERARY, getMapUrl } from '@/lib/daling-data';
 
 export default function ItinerarySection() {
@@ -128,18 +128,43 @@ export default function ItinerarySection() {
         </div>
       </div>
 
-      {/* 總結 */}
-      <div className="mt-24 p-10 bg-gradient-to-br from-primary/5 via-background to-accent/5 border-2 border-primary/20 rounded-3xl shadow-inner text-center">
-        <h3 className="font-display text-3xl font-bold text-foreground mb-4">
-          💰 預算估算
-        </h3>
-        <div className="space-y-3">
-          <p className="text-xl text-foreground">
-            交通 (火車) + 美食 + 冰棒 = <span className="text-3xl font-black text-primary">約 $150-200</span>
-          </p>
-          <p className="text-muted-foreground text-lg">
-            ✨ 不用花大錢，也能享受大林的懷舊風情和在地美食！
-          </p>
+      {/* 總結區塊 - 修改為左右並排 */}
+      <div className="mt-24 flex flex-col lg:flex-row gap-8 items-stretch">
+        {/* 左側：預算估算 */}
+        <div className="flex-1 p-10 bg-gradient-to-br from-primary/5 via-background to-accent/5 border-2 border-primary/20 rounded-3xl shadow-inner flex flex-col justify-center text-center lg:text-left">
+          <h3 className="font-display text-3xl font-bold text-foreground mb-6 flex items-center justify-center lg:justify-start gap-3">
+            💰 預算估算
+          </h3>
+          <div className="space-y-4">
+            <p className="text-2xl text-foreground leading-relaxed">
+              交通 (火車) + 美食 + 冰棒
+              <br />
+              <span className="text-5xl font-black text-primary">約 $150-200</span>
+            </p>
+            <p className="text-muted-foreground text-lg italic">
+              ✨ 不用花大錢，也能享受大林的懷舊風情和在地美食！
+            </p>
+          </div>
+        </div>
+
+        {/* 右側：影片展示 */}
+        <div className="flex-1 relative group overflow-hidden rounded-3xl shadow-2xl border-4 border-white aspect-video lg:aspect-auto">
+          <video 
+            className="w-full h-full object-cover"
+            autoPlay 
+            muted 
+            loop 
+            playsInline
+          >
+            <source src="/videos/666.mp4" type="video/mp4" />
+            您的瀏覽器不支援影片播放。
+          </video>
+          {/* 影片裝飾遮罩 */}
+          <div className="absolute inset-0 bg-black/20 group-hover:bg-transparent transition-all duration-500" />
+          <div className="absolute top-4 left-4 px-4 py-2 bg-black/50 backdrop-blur-md rounded-full text-white text-sm font-bold flex items-center gap-2">
+            <PlayCircle size={16} className="text-primary" />
+            大林慢遊紀錄
+          </div>
         </div>
       </div>
     </div>
