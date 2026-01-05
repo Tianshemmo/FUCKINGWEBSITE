@@ -1,0 +1,5 @@
+[[redirects]]
+  from = "/api/weather/*"
+  to = "https://opendata.cwa.gov.tw/api/v1/rest/datastore/:splat"
+  status = 200
+  force = true
