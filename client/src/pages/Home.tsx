@@ -10,6 +10,7 @@
 
 import { useState, useEffect } from 'react';
 import HeroSection from '@/components/sections/HeroSection';
+import AboutSection from '@/components/sections/AboutSection';
 import WeatherSection from '@/components/sections/WeatherSection';
 import FoodMapSection from '@/components/sections/FoodMapSection';
 import ItinerarySection from '@/components/sections/ItinerarySection';
@@ -49,15 +50,18 @@ export default function Home() {
         style={{ width: `${scrollProgress}%` }}
       />
 
-      {/* 主要內容 */}
+        {/* 主要內容 */}
       <main className="w-full">
         {/* 英雄區 */}
         <HeroSection />
 
+        {/* 關於大林 */}
+        <AboutSection />
+
         {/* 分隔符 */}
         <SectionDivider type="wave" />
 
-        {/* 即時天氣資訊 */}
+        {/* 天氣資訊 */}
         <section id="weather" className="py-16 px-4 md:px-8">
           <div className="container">
             <WeatherSection />

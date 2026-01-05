@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { cn } from '@/lib/utils';
 
 const navItems = [
+  { name: '關於大林', href: '#about' },
   { name: '天氣資訊', href: '#weather' },
   { name: '美食地圖', href: '#food-map' },
   { name: '一日遊', href: '#itinerary' },
@@ -49,13 +50,13 @@ export default function Navbar() {
           大林慢遊
         </div>
         
-        <div className="hidden lg:flex items-center gap-10">
+        <div className="hidden lg:flex items-center gap-6 xl:gap-10">
           {navItems.map((item) => (
             <a
               key={item.name}
               href={item.href}
               onClick={(e) => scrollToSection(e, item.href)}
-              className="text-xl font-black text-foreground hover:text-primary transition-all hover:scale-110 active:scale-95"
+              className="text-lg xl:text-xl font-black text-foreground hover:text-primary transition-all hover:scale-110 active:scale-95 whitespace-nowrap"
             >
               {item.name}
             </a>
@@ -64,7 +65,7 @@ export default function Navbar() {
 
         {/* 手機版快速導航 */}
         <div className="lg:hidden flex gap-2 overflow-x-auto no-scrollbar py-1 ml-4">
-          {navItems.slice(0, 4).map((item) => (
+          {navItems.slice(0, 5).map((item) => (
             <a
               key={item.name}
               href={item.href}

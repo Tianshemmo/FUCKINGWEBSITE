@@ -19,9 +19,9 @@ export default function FoodMapSection() {
 
   const filterOptions: { value: FilterType; label: string; emoji: string }[] = [
     { value: 'all', label: '全部', emoji: '🍽️' },
-    { value: 'under50', label: '50元以內', emoji: '💰' },
-    { value: 'under100', label: '100元以內', emoji: '💵' },
-    { value: 'under200', label: '200元以內', emoji: '💳' },
+    { value: 'under50', label: '0~50元', emoji: '💰' },
+    { value: 'under100', label: '50~100元', emoji: '💵' },
+    { value: 'under200', label: '100~200元', emoji: '💳' },
     { value: 'luxury', label: '奢華', emoji: '💎' },
   ];
 
