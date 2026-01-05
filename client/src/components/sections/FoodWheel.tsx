@@ -6,7 +6,7 @@
 import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
-import { FOOD_WHEEL_OPTIONS } from '@/lib/daling-data';
+import { FOOD_WHEEL_OPTIONS, getMapUrl } from '@/lib/daling-data';
 import { cn } from '@/lib/utils';
 
 export default function FoodWheel() {
@@ -125,7 +125,7 @@ export default function FoodWheel() {
                   決定好了！就吃這個吧 🎉
                 </p>
                 <Button
-                  onClick={() => window.open(selectedFood.mapUrl, '_blank')}
+                  onClick={() => window.open(getMapUrl(selectedFood.placeId, selectedFood.name), '_blank')}
                   className="w-full bg-accent text-accent-foreground hover:bg-accent/90 font-semibold mb-3"
                 >
                   📍 Google Maps 導航

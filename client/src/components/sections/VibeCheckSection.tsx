@@ -6,7 +6,7 @@
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
-import { VIBE_SPOTS } from '@/lib/daling-data';
+import { VIBE_SPOTS, getMapUrl } from '@/lib/daling-data';
 import { MapPin } from 'lucide-react';
 
 type VibeType = 'vintage' | 'retro' | 'industrial' | 'nature';
@@ -104,7 +104,7 @@ export default function VibeCheckSection() {
 
               {/* 導航按鈕 */}
               <Button
-                onClick={() => window.open(recommendedSpot.mapUrl, '_blank')}
+                onClick={() => window.open(getMapUrl(recommendedSpot.placeId, recommendedSpot.name), '_blank')}
                 className="w-full bg-accent text-accent-foreground hover:bg-accent/90 font-semibold mb-3"
               >
                 <MapPin size={18} className="mr-2" />
@@ -120,7 +120,7 @@ export default function VibeCheckSection() {
                   {VIBE_SPOTS.filter(s => s.vibe !== selectedVibe).slice(0, 2).map(spot => (
                     <button
                       key={spot.id}
-                      onClick={() => window.open(spot.mapUrl, '_blank')}
+                      onClick={() => window.open(getMapUrl(spot.placeId, spot.name), '_blank')}
                       className="w-full p-2 text-left text-sm rounded border border-accent/30 hover:bg-accent/10 transition-colors text-foreground"
                     >
                       <p className="font-semibold">{spot.name}</p>
@@ -156,7 +156,7 @@ export default function VibeCheckSection() {
               <Card
                 key={spot.id}
                 className="p-4 border-2 border-secondary/20 hover:shadow-lg transition-shadow cursor-pointer"
-                onClick={() => window.open(spot.mapUrl, '_blank')}
+                onClick={() => window.open(getMapUrl(spot.placeId, spot.name), '_blank')}
               >
                 <p className="text-3xl mb-2 text-center">{vibeOption?.emoji}</p>
                 <h4 className="font-display text-sm font-bold text-foreground mb-1 text-center">

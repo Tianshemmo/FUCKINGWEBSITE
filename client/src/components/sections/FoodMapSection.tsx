@@ -6,9 +6,9 @@
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { MapPin, Star } from 'lucide-react';
-import { FOOD_ITEMS } from '@/lib/daling-data';
+import { FOOD_ITEMS, getMapUrl } from '@/lib/daling-data';
 
-type FilterType = 'all' | 'under50' | 'under100' | 'hearty' | 'photogenic';
+type FilterType = 'all' | 'under50' | 'under100' | 'under200' | 'luxury';
 
 export default function FoodMapSection() {
   const [activeFilter, setActiveFilter] = useState<FilterType>('all');
@@ -21,8 +21,8 @@ export default function FoodMapSection() {
     { value: 'all', label: '全部', emoji: '🍽️' },
     { value: 'under50', label: '50元以內', emoji: '💰' },
     { value: 'under100', label: '100元以內', emoji: '💵' },
-    { value: 'hearty', label: '吃粗飽', emoji: '🍚' },
-    { value: 'photogenic', label: '適合發限動', emoji: '📸' },
+    { value: 'under200', label: '200元以內', emoji: '💳' },
+    { value: 'luxury', label: '奢華', emoji: '💎' },
   ];
 
   return (
@@ -99,7 +99,7 @@ export default function FoodMapSection() {
 
               {/* 導航按鈕 */}
               <Button
-                onClick={() => window.open(food.mapUrl, '_blank')}
+                onClick={() => window.open(getMapUrl(food.placeId, food.name), '_blank')}
                 className="w-full bg-accent text-accent-foreground hover:bg-accent/90 font-semibold"
               >
                 📍 Google Maps 導航

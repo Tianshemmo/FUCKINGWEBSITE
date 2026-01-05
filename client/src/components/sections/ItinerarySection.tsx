@@ -1,11 +1,11 @@
 /**
  * 一日遊行程規劃組件
- * 垂直時間軸設計，展示大林一日遊行程
+ * 垂直時間軸設計，展示大林一日遊行程，並支援單圖或多圖展示
  */
 
 import { Button } from '@/components/ui/button';
 import { MapPin, Clock } from 'lucide-react';
-import { ITINERARY } from '@/lib/daling-data';
+import { ITINERARY, getMapUrl } from '@/lib/daling-data';
 
 export default function ItinerarySection() {
   return (
@@ -26,72 +26,121 @@ export default function ItinerarySection() {
         <div className="hidden md:block absolute left-1/2 top-0 bottom-0 w-1 bg-gradient-to-b from-primary via-secondary to-accent transform -translate-x-1/2" />
 
         {/* 時間軸項目 */}
-        <div className="space-y-8 md:space-y-12">
+        <div className="space-y-12 md:space-y-24">
           {ITINERARY.map((stop, index) => (
             <div
               key={stop.id}
-              className={`flex gap-6 md:gap-0 ${index % 2 === 0 ? 'md:flex-row' : 'md:flex-row-reverse'}`}
+              className={`flex flex-col md:flex-row gap-8 md:gap-0 items-center ${index % 2 === 0 ? 'md:flex-row' : 'md:flex-row-reverse'}`}
             >
-              {/* 左側內容 */}
-              <div className={`flex-1 ${index % 2 === 0 ? 'md:text-right md:pr-12' : 'md:pl-12'}`}>
-                <div className="bg-white rounded-lg border-2 border-secondary/20 p-6 hover:shadow-lg transition-shadow">
+              {/* 文字內容區塊 */}
+              <div className={`flex-1 w-full ${index % 2 === 0 ? 'md:text-right md:pr-12' : 'md:pl-12'}`}>
+                <div className="bg-white rounded-2xl border-2 border-secondary/10 p-8 hover:shadow-2xl transition-all duration-500">
                   {/* 時間 */}
-                  <div className="flex items-center gap-2 mb-3">
-                    <Clock size={18} className="text-secondary" />
-                    <span className="font-display text-lg font-bold text-foreground">
+                  <div className={`flex items-center gap-2 mb-4 ${index % 2 === 0 ? 'md:justify-end' : 'md:justify-start'}`}>
+                    <Clock size={20} className="text-secondary" />
+                    <span className="font-display text-xl font-bold text-foreground">
                       {stop.time}
                     </span>
                   </div>
 
                   {/* 地點名稱 */}
-                  <h3 className="font-display text-2xl font-bold text-foreground mb-2">
+                  <h3 className="font-display text-3xl font-bold text-foreground mb-4">
                     {stop.name}
                   </h3>
 
                   {/* 描述 */}
-                  <p className="text-muted-foreground mb-4">
+                  <p className="text-muted-foreground text-lg mb-6 leading-relaxed">
                     {stop.description}
                   </p>
 
                   {/* 小提示 */}
-                  <p className="text-sm bg-primary/10 border-l-2 border-primary p-3 rounded mb-4 text-foreground">
-                    💡 {stop.tips}
-                  </p>
+                  <div className={`flex mb-8 ${index % 2 === 0 ? 'md:justify-end' : 'md:justify-start'}`}>
+                    <p className="text-sm bg-primary/5 border-l-4 border-primary p-4 rounded-r-xl text-foreground inline-block text-left max-w-xs">
+                      💡 {stop.tips}
+                    </p>
+                  </div>
 
                   {/* 導航按鈕 */}
                   <Button
-                    onClick={() => window.open(stop.mapUrl, '_blank')}
-                    className="w-full md:w-auto bg-accent text-accent-foreground hover:bg-accent/90 font-semibold"
+                    onClick={() => window.open(getMapUrl(stop.placeId, stop.name), '_blank')}
+                    className="w-full md:w-auto bg-accent text-accent-foreground hover:bg-accent/90 font-bold shadow-md px-8 py-6 text-lg"
                   >
-                    <MapPin size={16} className="mr-2" />
+                    <MapPin size={20} className="mr-2" />
                     Google Maps 導航
                   </Button>
                 </div>
               </div>
 
               {/* 中央圓點 */}
-              <div className="hidden md:flex items-center justify-center">
-                <div className="w-6 h-6 bg-primary rounded-full border-4 border-background shadow-lg" />
+              <div className="hidden md:flex items-center justify-center z-10">
+                <div className="w-10 h-10 bg-primary rounded-full border-4 border-background shadow-2xl flex items-center justify-center text-sm text-white font-black">
+                  {index + 1}
+                </div>
               </div>
 
-              {/* 右側空白 */}
-              <div className="flex-1" />
+              {/* 圖片區塊 */}
+              <div className={`flex-1 w-full ${index % 2 === 0 ? 'md:pl-12' : 'md:pr-12'}`}>
+                {stop.images ? (
+                  /* 多圖展示 (針對拾粹院) */
+                  <div className="grid grid-cols-2 gap-3 h-full">
+                    <div className="col-span-2 relative group overflow-hidden rounded-2xl shadow-lg aspect-video">
+                      <img 
+                        src={stop.images[0]} 
+                        alt={`${stop.name}-1`}
+                        className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+                        onError={(e) => {(e.target as HTMLImageElement).src = `https://placehold.co/600x400?text=${stop.name}-1`}}
+                      />
+                    </div>
+                    <div className="relative group overflow-hidden rounded-2xl shadow-lg aspect-square">
+                      <img 
+                        src={stop.images[1]} 
+                        alt={`${stop.name}-2`}
+                        className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+                        onError={(e) => {(e.target as HTMLImageElement).src = `https://placehold.co/400x400?text=${stop.name}-2`}}
+                      />
+                    </div>
+                    <div className="relative group overflow-hidden rounded-2xl shadow-lg aspect-square">
+                      <img 
+                        src={stop.images[2]} 
+                        alt={`${stop.name}-3`}
+                        className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+                        onError={(e) => {(e.target as HTMLImageElement).src = `https://placehold.co/400x400?text=${stop.name}-3`}}
+                      />
+                    </div>
+                  </div>
+                ) : (
+                  /* 單圖展示 */
+                  <div className="relative group overflow-hidden rounded-2xl shadow-lg aspect-video md:aspect-square lg:aspect-video">
+                    <img 
+                      src={stop.image} 
+                      alt={stop.name}
+                      className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+                      onError={(e) => {(e.target as HTMLImageElement).src = `https://placehold.co/600x400?text=${stop.name}`}}
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end p-4">
+                      <span className="text-white font-bold text-lg">{stop.name}</span>
+                    </div>
+                  </div>
+                )}
+              </div>
             </div>
           ))}
         </div>
       </div>
 
       {/* 總結 */}
-      <div className="mt-12 p-6 bg-gradient-to-r from-primary/10 to-accent/10 border-2 border-primary/30 rounded-lg">
-        <h3 className="font-display text-xl font-bold text-foreground mb-2">
+      <div className="mt-24 p-10 bg-gradient-to-br from-primary/5 via-background to-accent/5 border-2 border-primary/20 rounded-3xl shadow-inner text-center">
+        <h3 className="font-display text-3xl font-bold text-foreground mb-4">
           💰 預算估算
         </h3>
-        <p className="text-foreground mb-3">
-          交通 (火車) + 美食 + 冰棒 = 約 $150-200
-        </p>
-        <p className="text-sm text-muted-foreground">
-          ✨ 不用花大錢，也能享受大林的懷舊風情和在地美食！
-        </p>
+        <div className="space-y-3">
+          <p className="text-xl text-foreground">
+            交通 (火車) + 美食 + 冰棒 = <span className="text-3xl font-black text-primary">約 $150-200</span>
+          </p>
+          <p className="text-muted-foreground text-lg">
+            ✨ 不用花大錢，也能享受大林的懷舊風情和在地美食！
+          </p>
+        </div>
       </div>
     </div>
   );
