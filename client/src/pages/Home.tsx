@@ -1,16 +1,10 @@
 /**
  * 首頁 - 大林慢遊：銅板系生存指南
- * 
- * 設計哲學：
- * - 長滾動式設計，每個功能區塊獨立成段
- * - 使用火車軌道圖案分隔各區塊
- * - 復古懷舊 × 青年文化混搭
- * - 色彩：大林糖廠黃 + 鐵道灰 + 青綠 + 米白背景
  */
 
 import { useState, useEffect } from 'react';
 import HeroSection from '@/components/sections/HeroSection';
-import TrainInfoBoard from '@/components/sections/TrainInfoBoard';
+import WeatherSection from '@/components/sections/WeatherSection'; // 確保這行存在
 import FoodMapSection from '@/components/sections/FoodMapSection';
 import ItinerarySection from '@/components/sections/ItinerarySection';
 import BudgetCalculator from '@/components/sections/BudgetCalculator';
@@ -52,10 +46,10 @@ export default function Home() {
         {/* 分隔符 */}
         <SectionDivider type="wave" />
 
-        {/* 即時列車資訊 */}
+        {/* 即時天氣資訊 - 替換原本的火車資訊 */}
         <section className="py-16 px-4 md:px-8">
           <div className="container">
-            <TrainInfoBoard />
+            <WeatherSection />
           </div>
         </section>
 
@@ -92,7 +86,7 @@ export default function Home() {
         {/* 分隔符 */}
         <SectionDivider type="train-track" />
 
-        {/* 吃什麼轉盤 */}
+        {/* 吃什麼跑馬燈 (原本的轉盤) */}
         <section className="py-16 px-4 md:px-8">
           <div className="container">
             <FoodWheel />
