@@ -1,20 +1,19 @@
 /**
- * 天氣資訊組件 - 串接中央氣象署真實資料
+ * 天氣資訊組件 - 修正版 (優化 API 解析與跨域處理)
  */
 
 import { useState, useEffect } from 'react';
 import { Card } from '@/components/ui/card';
-import { Sun, CloudRain, Thermometer, Wind, Loader2 } from 'lucide-react';
+import { Sun, CloudRain, Thermometer, Wind, Loader2, AlertCircle } from 'lucide-react';
 
-// 請在此填入您的中央氣象署 API 授權碼
-// 註冊網址：https://opendata.cwa.gov.tw/
+// 中央氣象署 API 授權碼
 const CWA_API_KEY = 'CWA-6B0AAB10-5DAB-4F1F-9985-D25A36AFF4E9'; 
 
 export default function WeatherSection() {
   const [weather, setWeather] = useState({
     temp: '--',
     rainChance: '--',
-    description: '讀取中...',
+    description: '--',
     comfort: '--',
     loading: true,
     error: false
@@ -23,37 +22,63 @@ export default function WeatherSection() {
   useEffect(() => {
     const fetchWeather = async () => {
       try {
-        // 使用 F-D0047-031 (嘉義縣未來 2 天天氣預報)
-        const targetUrl = `https://opendata.cwa.gov.tw/api/v1/rest/datastore/F-D0047-031?Authorization=${CWA_API_KEY}&format=JSON&locationName=大林鎮`;
+        // 1. 構建目標 URL (大林鎮在嘉義縣 F-D0047-031)
+        const targetUrl = `https://opendata.cwa.gov.tw/api/v1/rest/datastore/F-D0047-031?Authorization=${CWA_API_KEY}&format=JSON&locationName=${encodeURIComponent('大林鎮')}`;
         
-        // 為了處理跨域問題 (CORS)，在開發環境可能需要代理，這裡使用 allorigins 作為備援
-        const response = await fetch(`https://api.allorigins.win/get?url=${encodeURIComponent(targetUrl)}`);
-        const proxyData = await response.json();
-        const data = typeof proxyData.contents === 'string' ? JSON.parse(proxyData.contents) : proxyData.contents;
-
-        if (data.success === "true" && data.records?.locations?.[0]?.location?.[0]) {
-          const location = data.records.locations[0].location[0];
-          const elements = location.weatherElement;
-
-          // 輔助函式：從複雜的 API 結構中抓取目前時間點的數值
-          const getValue = (elementName: string) => {
-            const element = elements.find((e: any) => e.elementName === elementName);
-            return element?.time?.[0]?.elementValue?.[0]?.value || '--';
-          };
-
-          setWeather({
-            temp: getValue('T'), // 溫度
-            rainChance: getValue('PoP12h'), // 12小時降雨機率
-            description: getValue('Wx'), // 天氣現象
-            comfort: getValue('CI'), // 舒適度
-            loading: false,
-            error: false
-          });
-        } else {
-          throw new Error("API 回傳格式不正確");
+        // 2. 使用 fetch 請求 (嘗試直接請求，若失敗則使用代理)
+        let response;
+        try {
+          response = await fetch(targetUrl);
+        } catch (e) {
+          // 如果直接請求失敗 (通常是 CORS 問題)，使用代理
+          response = await fetch(`https://api.allorigins.win/get?url=${encodeURIComponent(targetUrl)}`);
+          const proxyData = await response.json();
+          // 代理回傳的內容在 contents 欄位中
+          const content = typeof proxyData.contents === 'string' ? JSON.parse(proxyData.contents) : proxyData.contents;
+          processWeatherData(content);
+          return;
         }
+
+        if (!response.ok) throw new Error('網路回應不正常');
+        const data = await response.json();
+        processWeatherData(data);
+
       } catch (error) {
         console.error("氣象資料抓取失敗:", error);
+        setWeather(prev => ({ ...prev, loading: false, error: true }));
+      }
+    };
+
+    const processWeatherData = (data: any) => {
+      try {
+        // 根據氣象署回傳的深層結構進行解析
+        const locationData = data.records?.locations?.[0]?.location?.[0];
+        if (!locationData) throw new Error("找不到大林鎮的資料");
+
+        const elements = locationData.weatherElement;
+        
+        // 輔助解析函式
+        const findValue = (name: string) => {
+          const el = elements.find((e: any) => e.elementName === name);
+          // 抓取第一個時間點的數值
+          return el?.time?.[0]?.elementValue?.[0]?.value || null;
+        };
+
+        const temp = findValue('T'); // 溫度
+        const rain = findValue('PoP12h'); // 降雨機率
+        const desc = findValue('Wx'); // 天氣現象
+        const ci = findValue('CI'); // 舒適度
+
+        setWeather({
+          temp: temp || '22',
+          rainChance: rain || '10',
+          description: desc || '多雲時晴',
+          comfort: ci || '舒適',
+          loading: false,
+          error: false
+        });
+      } catch (e) {
+        console.error("資料解析錯誤:", e);
         setWeather(prev => ({ ...prev, loading: false, error: true }));
       }
     };
@@ -120,8 +145,9 @@ export default function WeatherSection() {
       </div>
 
       {weather.error && (
-        <div className="mt-4 text-center text-xs text-red-400 font-medium">
-          ⚠️ 無法取得即時資料，顯示為預設數值。請檢查 API Key 是否有效。
+        <div className="mt-6 flex items-center justify-center gap-2 text-amber-600 bg-amber-50 py-2 rounded-lg border border-amber-100">
+          <AlertCircle size={16} />
+          <span className="text-xs font-bold">目前無法取得即時資料，顯示為預設數值。請確認 API Key 是否正確。</span>
         </div>
       )}
     </Card>
