@@ -133,7 +133,7 @@ export default function ItinerarySection() {
         {/* 左側：預算估算 */}
         <div className="flex-1 p-10 bg-gradient-to-br from-primary/5 via-background to-accent/5 border-2 border-primary/20 rounded-3xl shadow-inner flex flex-col justify-center text-center lg:text-left">
           <h3 className="font-display text-3xl font-bold text-foreground mb-6 flex items-center justify-center lg:justify-start gap-3">
-            💰 預算估算
+            💰 預算估計
           </h3>
           <div className="space-y-4">
             <p className="text-2xl text-foreground leading-relaxed">

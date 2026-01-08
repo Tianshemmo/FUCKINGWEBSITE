@@ -10,6 +10,7 @@ export default function WeatherSection() {
     rainChance: '--',
     description: '--',
     uv: '--',
+    location: '--', // 用來確認目前抓到的地點
     loading: true,
     error: false
   });
@@ -17,39 +18,52 @@ export default function WeatherSection() {
   useEffect(() => {
     const fetchWeather = async () => {
       try {
-        // 使用您目前的 URL
         const url = `https://opendata.cwa.gov.tw/api/v1/rest/datastore/F-D0047-031?Authorization=${CWA_API_KEY}&format=JSON&locationName=${encodeURIComponent('大林鎮')}`;
         const response = await fetch(url);
         const data = await response.json();
 
-        const locationData = data.records?.Locations?.[0]?.Location?.[0];
-        const elements = locationData?.WeatherElement || [];
+        // --- 關鍵修正：精確篩選大林鎮 ---
+        const allLocations = data.records?.Locations?.[0]?.Location || [];
+        // 確保抓到名稱為「大林鎮」的資料，若找不到則顯示警告
+        const dalinData = allLocations.find((loc: any) => loc.LocationName === '大林鎮');
+        
+        if (!dalinData) {
+          console.error("❌ 在 API 回傳中找不到「大林鎮」的資料，請檢查 URL 參數");
+          throw new Error("找不到地點資料");
+        }
 
-        // 核心邏輯：支援多種可能的降雨欄位名稱與時段搜尋
-        const findValue = (possibleNames: string[], valueKey: string) => {
-          // 1. 先找出對應的元素（相容 12小時/6小時/降雨機率 等不同命名）
+        const elements = dalinData.WeatherElement || [];
+
+        // --- Console 偵錯報表 ---
+        console.group('%c 📍 氣象站定位確認 ', 'background: #222; color: #bada55; padding: 5px;');
+        console.log(`目前抓取地點: %c${dalinData.LocationName}`, 'color: #ff9f43; font-weight: bold; font-size: 14px;');
+        
+        const findValueWithLog = (possibleNames: string[], valueKey: string) => {
           const element = elements.find((el: any) => possibleNames.includes(el.ElementName));
-          if (!element || !element.Time) return '--';
+          if (!element) return '--';
 
-          // 2. 遍歷 Time 陣列找到第一個不是空的數值
-          for (const slot of element.Time) {
-            const val = slot.ElementValue?.[0]?.[valueKey];
-            if (val !== undefined && val !== null && val.toString().trim() !== "" && val !== " ") {
+          for (let i = 0; i < (element.Time?.length || 0); i++) {
+            const val = element.Time[i].ElementValue?.[0]?.[valueKey];
+            if (val !== undefined && val !== null && val.toString().trim() !== "") {
+              console.log(`✅ %c${element.ElementName}%c -> %c${val}`, 'color: cyan', 'color: white', 'font-weight: bold; color: yellow');
               return val;
             }
           }
           return '--';
         };
 
-        setWeather({
-          temp: findValue(['平均溫度', '溫度'], 'Temperature'),
-          // 同時找「降雨機率」與「12小時降雨機率」
-          rainChance: findValue(['降雨機率', '12小時降雨機率', '6小時降雨機率'], 'ProbabilityOfPrecipitation'),
-          description: findValue(['天氣現象'], 'Weather'),
-          uv: findValue(['紫外線指數'], 'UVIndex'),
-          loading: false,
-          error: false
-        });
+        const results = {
+          temp: findValueWithLog(['平均溫度', '溫度'], 'Temperature'),
+          rainChance: findValueWithLog(['降雨機率', '12小時降雨機率', '6小時降雨機率'], 'ProbabilityOfPrecipitation'),
+          description: findValueWithLog(['天氣現象'], 'Weather'),
+          uv: findValueWithLog(['紫外線指數'], 'UVIndex'),
+          location: dalinData.LocationName
+        };
+
+        console.table(results);
+        console.groupEnd();
+
+        setWeather({ ...results, loading: false, error: false });
 
       } catch (error) {
         console.error("抓取失敗:", error);
@@ -60,10 +74,17 @@ export default function WeatherSection() {
     fetchWeather();
   }, []);
 
-  if (weather.loading) return <div className="p-10 text-center"><Loader2 className="animate-spin inline mr-2"/>大林鎮資料同步中...</div>;
+  if (weather.loading) return <div className="p-10 text-center animate-pulse">📡 正在同步大林鎮氣象站...</div>;
 
   return (
     <Card className="w-full p-8 bg-white shadow-2xl rounded-3xl border-none">
+      <div className="flex items-center gap-2 mb-6">
+        <div className="w-2 h-2 bg-green-500 rounded-full animate-ping" />
+        <span className="text-xs font-black text-slate-400 uppercase tracking-widest">
+          {weather.location} 即時天氣預報
+        </span>
+      </div>
+
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-6">
         <WeatherItem 
           label="目前氣溫" 
@@ -74,7 +95,7 @@ export default function WeatherSection() {
         <WeatherItem 
           label="降雨機率" 
           value={weather.rainChance === '--' ? '--' : `${weather.rainChance}%`} 
-          subValue="近期預報" 
+          subValue="預估降雨" 
           icon={<CloudRain className="text-blue-500" />} 
         />
         <WeatherItem 
@@ -86,7 +107,7 @@ export default function WeatherSection() {
         <WeatherItem 
           label="天氣現象" 
           value={weather.description} 
-          subValue="目前狀況"
+          subValue="環境狀況"
           icon={<CloudSun className="text-sky-500" />} 
         />
       </div>
@@ -96,13 +117,13 @@ export default function WeatherSection() {
 
 function WeatherItem({ label, value, subValue, icon }: any) {
   return (
-    <div className="flex flex-col items-center p-6 bg-slate-50 rounded-2xl hover:shadow-md transition-all">
+    <div className="flex flex-col items-center p-6 bg-slate-50 rounded-2xl hover:bg-white hover:shadow-xl transition-all duration-300 border border-transparent hover:border-slate-100">
       <span className="text-[10px] text-slate-400 font-bold mb-3 tracking-widest uppercase">{label}</span>
       <div className="flex items-center gap-2 mb-2">
         {icon}
         <span className="text-2xl font-black text-slate-800">{value}</span>
       </div>
-      <span className="text-[10px] text-slate-500">{subValue}</span>
+      <span className="text-[10px] text-slate-500 font-medium">{subValue}</span>
     </div>
   );
 }

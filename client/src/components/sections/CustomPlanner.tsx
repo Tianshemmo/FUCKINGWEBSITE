@@ -109,7 +109,7 @@ export default function CustomPlanner() {
 
             {selectedIds.length === 0 ? (
               <div className="text-center py-12 border-2 border-dashed border-slate-100 rounded-xl">
-                <p className="text-muted-foreground">尚未選擇景點<br/>請從左側挑選</p>
+                <p className="text-muted-foreground">尚未選擇景點<br/>請從左側挑選(手機為上方)</p>
               </div>
             ) : (
               <div className="space-y-3 mb-8">
