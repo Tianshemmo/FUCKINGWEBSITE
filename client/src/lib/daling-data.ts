@@ -218,7 +218,7 @@ export const ALL_ATTRACTIONS: Attraction[] = [
   { id: 'art', name: '拾粹院文創藝術園區', description: '3D彩繪牆、鯖魚主題館', address: '622嘉義縣大林鎮大湖農場61號', placeId: 'ChIJ7XD51T-5bjQRfzicxqy_tPE' },
   { id: 'oldstreet', name: '大林老街', description: '在地美食與老街風情', address: '622嘉義縣大林鎮中山路37號', placeId: 'ChIJ9fuj2rm-bjQRIMmCG5d83gE' },
   { id: 'jordenice', name: '佐登妮絲城堡', description: '巴洛克風格歐式城堡', address: '622嘉義縣大林鎮大埔美園區三路15號', placeId: 'ChIJeTP05kC_bjQR5Unf6dNwmdw' },
-  { id: 'gaia', name: '蓋婭莊園', description: '希臘風建築、美妝觀光工廠', address: '622嘉義縣大林鎮大埔美園區三路15號', placeId: 'ChIJ2YCbxY6_bjQRgqaJqhDrrpg' },
+  { id: 'gaia', name: '蓋婭莊園', description: '希臘風建築、美妝觀光工廠', address: '622011嘉義縣大林鎮大埔美園區七路18號', placeId: 'ChIJ2YCbxY6_bjQRgqaJqhDrrpg' },
   { id: 'yang', name: '老楊方城市', description: '方塊酥主題觀光工廠', address: '622嘉義縣大林鎮大埔美園區五路3號', placeId: 'ChIJGSVTyH6VbjQRbzwFG6SSOms' },
   { id: 'nightmarket', name: '大林夜市', description: '週一限定！在地人的美味廚房', address: '622嘉義縣大林鎮水源路49號號旁', placeId: 'ChIJ-WSNVbi-bjQRXAgoEvFNIRE' },
   { id: 'station', name: '大林車站', description: '大林火車站~', address: '號, No. 13中山路大林鎮嘉義縣622', placeId: 'ChIJscUcz7m-bjQRiZWYf1Z7ago' }
