@@ -169,11 +169,11 @@ export const ITINERARY: ItineraryStop[] = [
     id: 'station',
     time: '10:00 AM',
     name: '大林火車站',
-    description: '抵達大林，拍照打卡，介紹站長宿舍（日式建築，免門票）',
+    description: '抵達大林，拍照打卡，有站長宿舍（日式建築，免門票）',
     icon: '🚂',
     placeId: 'ChIJscUcz7m-bjQRiZWYf1Z7ago',
     mapUrl: 'https://maps.app.goo.gl/D6CcwoYM5woDW7q6A',
-    tips: '火車站前有免費停車場，適合拍照打卡',
+    tips: '火車站前有停車場，適合拍照打卡',
     image: '/images/visit1.jpg'
   },
   {
